@@ -205,9 +205,17 @@
       <div class="projects-heading">
         <span class="projects-number">03</span>
         <h2 id="projects-title">PROJECTS</h2>
+        <button class="projects-sort-toggle" type="button" role="switch"
+          aria-controls="projects-grid content-groups" aria-checked="false"
+          aria-label="현재 프로젝트 정렬, 콘텐츠 정렬로 전환">
+          <span class="projects-sort-toggle-label">프로젝트 정렬</span>
+          <span class="projects-sort-toggle-switch" aria-hidden="true">
+            <span class="projects-sort-toggle-knob"></span>
+          </span>
+        </button>
       </div>
 
-      <div class="projects-grid">
+      <div class="projects-grid" id="projects-grid">
 
         <article class="project-card">
           <header class="project-card-header">
@@ -233,9 +241,9 @@
             <div class="project-description">
               <p>기존 Interaction Manager의 전체 Registry 순회 구조를 AI 분석과 Benchmark를 활용해 Player 주변 Candidate 기반 탐색 구조로 리팩토링했습니다. Baseline 구축부터 설계 검토, 구현, Gameplay 검증까지 AI와 개발자의 역할을 분리해 진행했습니다.</p>
               <ul>
-                <li>전체 Registry N 기반 탐색을 주변 Candidate K 기반 탐색 구조로 개선</li>
-                <li>Pending Add / Remove 및 Interaction Lifecycle 기반 Target 관리</li>
-                <li>Before / After Benchmark와 Gameplay Regression 검증</li>
+                <li data-content-category="client-quality">전체 Registry N 기반 탐색을 주변 Candidate K 기반 탐색 구조로 개선</li>
+                <li data-content-category="architecture">Pending Add / Remove 및 Interaction Lifecycle 기반 Target 관리</li>
+                <li data-content-category="client-quality">Before / After Benchmark와 Gameplay Regression 검증</li>
               </ul>
             </div>
           </div>
@@ -273,10 +281,10 @@
               <p>DirectX11 기반 3D 액션 어드벤처 「젤다의 전설: 꿈꾸는 섬」을 모작한 개인 프로젝트입니다.자체 MapToolNPC 대화 및 퀘스트 연동, Stack 기반 Level 관리
                 구조를 중심으로 콘텐츠 제작과 게임 흐름 관리 시스템을 구현했습니다. </p>
               <ul>
-                <li>데이터 기반 맵툴 및 에디터 시스템</li>
-                <li>Stack 기반 Level 관리</li>
-                <li>NPC 대화 및 Quest 연동 시스템</li>
-                <li>Observer 패턴을 이용한 Event Bus 시스템</li>
+                <li data-content-category="tools-ui">데이터 기반 맵툴 및 에디터 시스템</li>
+                <li data-content-category="architecture">Stack 기반 Level 관리</li>
+                <li data-content-category="gameplay">NPC 대화 및 Quest 연동 시스템</li>
+                <li data-content-category="architecture">Observer 패턴을 이용한 Event Bus 시스템</li>
               </ul>
             </div>
           </div>
@@ -319,9 +327,9 @@
               <p>DirectX11 기반 액션 RPG 모작 6인 팀 프로젝트입니다. UI 파트/몬스터/시스템을 담당했으며 UI Tool, 커스터마이징, 상호작용, 몬스터 AI, 미니맵 UI를 중심으로
                 구현했습니다.</p>
               <ul>
-                <li>UI Tool 기반 UI 제작 시스템</li>
-                <li>커스터마이징 UI 및 Customizing Manager</li>
-                <li>컴포넌트 기반 UI Framework 제작</li>
+                <li data-content-category="tools-ui">UI Tool 기반 UI 제작 시스템</li>
+                <li data-content-category="tools-ui">커스터마이징 UI 및 Customizing Manager</li>
+                <li data-content-category="tools-ui">컴포넌트 기반 UI Framework 제작</li>
               </ul>
             </div>
           </div>
@@ -364,9 +372,9 @@
               <p>DirectX 9 기반의 5인 팀프로젝트로 진행된 모작 프로젝트입니다. 팀장 및 UI 파트를 담당하여 요리 미니게임, HUD, 건축 UI, 맵 선택 UI 등 게임 데이터와 연동되는
                 인터페이스 시스템을 구현했습니다.</p>
               <ul>
-                <li>요리 미니게임 및 레시피 기반 시스템</li>
-                <li>조건 기반 콘텐츠 해금 및 Recipe 연동 시스템</li>
-                <li>Graph 기반 Stage 진행 및 Lock / Unlock 시스템</li>
+                <li data-content-category="gameplay">요리 미니게임 및 레시피 기반 시스템</li>
+                <li data-content-category="data">조건 기반 콘텐츠 해금 및 Recipe 연동 시스템</li>
+                <li data-content-category="data">Graph 기반 Stage 진행 및 Lock / Unlock 시스템</li>
               </ul>
             </div>
           </div>
@@ -408,9 +416,9 @@
             <div class="project-description">
               <p>WinAPI 기반 2D 액션 메트로베니아 모작 프로젝트입니다.상태 기반 플레이어 액션, 전투 시스템, Save / Load 시스템을 중심으로 구현했습니다.</p>
               <ul>
-                <li>FSM 기반 플레이어 행동 제어 시스템</li>
-                <li>Win32 API 기반 파일 입출력 Save / Load 시스템</li>
-                <li>AlphaBlend 기반 잔상 및 반투명 렌더링</li>
+                <li data-content-category="gameplay">FSM 기반 플레이어 행동 제어 시스템</li>
+                <li data-content-category="data">Win32 API 기반 파일 입출력 Save / Load 시스템</li>
+                <li data-content-category="client-quality">AlphaBlend 기반 잔상 및 반투명 렌더링</li>
               </ul>
             </div>
           </div>
@@ -452,9 +460,9 @@
             <div class="project-description">
               <p>MapleStory Worlds 기반 1:1 멀티플레이 미니게임 프로젝트를 개발 중입니다. 공통 미니게임 프레임워크와 Instance Room, Server Time 기반 Client 동기화 구조를 구현했습니다.</p>
               <ul>
-                <li>Registry / LifeCycle 기반 미니게임 실행 프레임워크</li>
-                <li>SharedMemory / Instance Room 기반 게임 진입 흐름</li>
-                <li>Server Gameplay 처리 및 Client 상태 동기화</li>
+                <li data-content-category="architecture">Registry / LifeCycle 기반 미니게임 실행 프레임워크</li>
+                <li data-content-category="multiplayer">SharedMemory / Instance Room 기반 게임 진입 흐름</li>
+                <li data-content-category="multiplayer">Server Gameplay 처리 및 Client 상태 동기화</li>
               </ul>
             </div>
           </div>
@@ -474,11 +482,13 @@
 
 
       </div>
+      <div class="content-groups" id="content-groups" aria-label="콘텐츠별 구현 목록" hidden></div>
     </section>
 
   </main>
 
   <footer class="footer">© 2026 Kim Minji. Game Client Programmer Portfolio.<br><strong>WE MAKE WONDERS!</strong></footer>
+  <script src="script.js"></script>
 </body>
 
 </html>
