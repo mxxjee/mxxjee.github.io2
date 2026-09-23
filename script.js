@@ -3,10 +3,58 @@
   const toggleLabel = document.querySelector(".projects-sort-toggle-label");
   const projectsGrid = document.querySelector("#projects-grid");
   const contentGroups = document.querySelector("#content-groups");
+  const carousel = document.querySelector(".projects-carousel");
+  const carouselViewport = document.querySelector(".projects-carousel-viewport");
+  const previousButton = document.querySelector(".projects-carousel-prev");
+  const nextButton = document.querySelector(".projects-carousel-next");
+  const carouselDots = document.querySelector(".projects-carousel-dots");
+  const carouselStatus = document.querySelector(".projects-carousel-status");
 
-  if (!toggle || !toggleLabel || !projectsGrid || !contentGroups) {
+  if (
+    !toggle ||
+    !toggleLabel ||
+    !projectsGrid ||
+    !contentGroups ||
+    !carousel ||
+    !carouselViewport ||
+    !previousButton ||
+    !nextButton ||
+    !carouselDots ||
+    !carouselStatus
+  ) {
     return;
   }
+
+  const projectOrder = [
+    "CodeVein 모작",
+    "젤다의 전설 : 꿈꾸는 섬 모작",
+    "AI 활용 Interaction Manager 리팩토링",
+    "Cult Of The Lamb 모작",
+    "모모도라:달 아래의 진혼곡 모작",
+    "맞짱 (개발 중)",
+  ];
+
+  const projectCards = Array.from(projectsGrid.querySelectorAll(".project-card"));
+
+  projectCards.sort((firstCard, secondCard) => {
+    const firstTitle = firstCard.querySelector(".project-title-block h3")?.textContent.trim();
+    const secondTitle = secondCard.querySelector(".project-title-block h3")?.textContent.trim();
+    const firstIndex = projectOrder.indexOf(firstTitle);
+    const secondIndex = projectOrder.indexOf(secondTitle);
+
+    return (firstIndex < 0 ? projectOrder.length : firstIndex) -
+      (secondIndex < 0 ? projectOrder.length : secondIndex);
+  });
+
+  projectCards.forEach((card, index) => {
+    const projectLabel = card.querySelector(".project-label");
+
+    if (projectLabel) {
+      projectLabel.textContent = `PROJECT ${String(index + 1).padStart(2, "0")}`;
+    }
+
+    projectsGrid.append(card);
+  });
 
   const categoryMeta = [
     {
@@ -139,9 +187,227 @@
     contentGroups.append(group);
   });
 
+  const appendLoopClones = (track) => {
+    const slides = Array.from(track.children);
+
+    slides.forEach((slide, index) => {
+      slide.dataset.carouselIndex = String(index);
+      const clone = slide.cloneNode(true);
+      clone.dataset.carouselClone = "true";
+      clone.setAttribute("aria-hidden", "true");
+      clone.querySelectorAll("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+        element.tabIndex = -1;
+      });
+      track.append(clone);
+    });
+
+    return slides;
+  };
+
+  const projectSlides = appendLoopClones(projectsGrid);
+  const contentSlides = appendLoopClones(contentGroups);
+
   let isContentView = false;
+  let wheelLocked = false;
+  let scrollFrame = 0;
+  let resizeFrame = 0;
+  let autoScrollFrame = 0;
+  let autoScrollPosition = 0;
+  let lastAutoScrollTime = 0;
+  let isCarouselHovered = false;
+  let isCarouselFocused = false;
+  let isCarouselVisible = false;
+  const autoScrollSpeed = 28;
+  const viewIndices = { projects: 0, content: 0 };
+  const viewMetrics = {
+    projects: { loopDistance: 0, slideDistance: 0 },
+    content: { loopDistance: 0, slideDistance: 0 },
+  };
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  const getViewKey = () => (isContentView ? "content" : "projects");
+  const getActiveTrack = () => (isContentView ? contentGroups : projectsGrid);
+  const getActiveSlides = () => (isContentView ? contentSlides : projectSlides);
+  const getActiveMetrics = () => viewMetrics[getViewKey()];
+  const updateLoopMetrics = () => {
+    const track = getActiveTrack();
+    const slides = getActiveSlides();
+    const firstSlide = slides[0];
+    const firstClone = track.querySelector('[data-carousel-clone="true"]');
+    const metrics = getActiveMetrics();
+
+    metrics.loopDistance =
+      firstSlide && firstClone ? firstClone.offsetLeft - firstSlide.offsetLeft : 0;
+    metrics.slideDistance =
+      slides.length > 1 ? slides[1].offsetLeft - slides[0].offsetLeft : metrics.loopDistance;
+  };
+  const getLoopDistance = () => getActiveMetrics().loopDistance;
+
+  const updateCarouselUi = () => {
+    const slides = getActiveSlides();
+    const viewKey = getViewKey();
+    const currentIndex = Math.min(viewIndices[viewKey], Math.max(slides.length - 1, 0));
+    const canNavigate = slides.length > 1;
+
+    viewIndices[viewKey] = currentIndex;
+    previousButton.disabled = !canNavigate;
+    nextButton.disabled = !canNavigate;
+    previousButton.setAttribute("aria-label", `이전 ${isContentView ? "콘텐츠" : "프로젝트"}`);
+    nextButton.setAttribute("aria-label", `다음 ${isContentView ? "콘텐츠" : "프로젝트"}`);
+    carouselViewport.setAttribute(
+      "aria-label",
+      `${isContentView ? "콘텐츠" : "프로젝트"} 슬라이드 ${currentIndex + 1} / ${slides.length}`,
+    );
+    carouselStatus.textContent = `${isContentView ? "콘텐츠" : "프로젝트"} ${currentIndex + 1} / ${slides.length}`;
+
+    carouselDots.querySelectorAll(".projects-carousel-dot").forEach((dot, index) => {
+      const isCurrent = index === currentIndex;
+      dot.setAttribute("aria-current", String(isCurrent));
+      dot.tabIndex = isCurrent ? 0 : -1;
+    });
+  };
+
+  const goToSlide = (requestedIndex, smooth = true) => {
+    const slides = getActiveSlides();
+
+    if (!slides.length) {
+      return;
+    }
+
+    const viewKey = getViewKey();
+    const nextIndex = Math.max(0, Math.min(requestedIndex, slides.length - 1));
+    const slide = slides[nextIndex];
+    const viewportRect = carouselViewport.getBoundingClientRect();
+    const slideRect = slide.getBoundingClientRect();
+    const slideCenter =
+      slideRect.left - viewportRect.left + carouselViewport.scrollLeft + slideRect.width / 2;
+    const baseTargetLeft = slideCenter - carouselViewport.clientWidth / 2;
+    const maxScroll = Math.max(0, carouselViewport.scrollWidth - carouselViewport.clientWidth);
+    const loopDistance = getLoopDistance();
+    const targetCandidates = [baseTargetLeft];
+
+    if (loopDistance > 0) {
+      targetCandidates.push(baseTargetLeft - loopDistance, baseTargetLeft + loopDistance);
+    }
+
+    const targetLeft = targetCandidates
+      .filter((candidate) => candidate >= 0 && candidate <= maxScroll)
+      .reduce(
+        (closest, candidate) =>
+          Math.abs(candidate - carouselViewport.scrollLeft) <
+          Math.abs(closest - carouselViewport.scrollLeft)
+            ? candidate
+            : closest,
+        Math.max(0, Math.min(baseTargetLeft, maxScroll)),
+      );
+
+    viewIndices[viewKey] = nextIndex;
+    carouselViewport.scrollTo({
+      left: targetLeft,
+      behavior: smooth && !prefersReducedMotion.matches ? "smooth" : "auto",
+    });
+    updateCarouselUi();
+  };
+
+  const stopAutoScroll = () => {
+    window.cancelAnimationFrame(autoScrollFrame);
+    autoScrollFrame = 0;
+    lastAutoScrollTime = 0;
+    carousel.classList.remove("is-auto-scrolling");
+  };
+
+  const autoScroll = (timestamp) => {
+    if (!lastAutoScrollTime) {
+      lastAutoScrollTime = timestamp;
+    }
+
+    const elapsed = Math.min(timestamp - lastAutoScrollTime, 1000);
+    const loopDistance = getLoopDistance();
+    lastAutoScrollTime = timestamp;
+
+    if (loopDistance > 0) {
+      autoScrollPosition += (autoScrollSpeed * elapsed) / 1000;
+
+      if (autoScrollPosition >= loopDistance) {
+        autoScrollPosition %= loopDistance;
+      }
+
+      carouselViewport.scrollLeft = autoScrollPosition;
+    }
+
+    autoScrollFrame = window.requestAnimationFrame(autoScroll);
+  };
+
+  const startAutoScroll = () => {
+    stopAutoScroll();
+
+    if (
+      prefersReducedMotion.matches ||
+      document.hidden ||
+      isCarouselHovered ||
+      isCarouselFocused ||
+      !isCarouselVisible ||
+      getActiveSlides().length < 2
+    ) {
+      return;
+    }
+
+    carousel.classList.add("is-auto-scrolling");
+    autoScrollPosition = carouselViewport.scrollLeft;
+    autoScrollFrame = window.requestAnimationFrame(autoScroll);
+  };
+
+  const centerSlideFromTarget = (target) => {
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    const slide = target.closest(".project-card, .content-group");
+
+    if (!slide || !getActiveTrack().contains(slide)) {
+      return;
+    }
+
+    const slideIndex = Number(slide.dataset.carouselIndex);
+
+    if (!Number.isInteger(slideIndex)) {
+      return;
+    }
+
+    stopAutoScroll();
+    goToSlide(slideIndex);
+  };
+
+  const renderCarouselDots = () => {
+    const slides = getActiveSlides();
+    const viewName = isContentView ? "콘텐츠" : "프로젝트";
+
+    carouselDots.replaceChildren();
+
+    slides.forEach((slide, index) => {
+      slide.setAttribute("aria-roledescription", "slide");
+      slide.setAttribute("aria-label", `${viewName} ${index + 1} / ${slides.length}`);
+
+      const dot = document.createElement("button");
+      dot.className = "projects-carousel-dot";
+      dot.type = "button";
+      dot.setAttribute("aria-label", `${viewName} ${index + 1}번 보기`);
+      dot.addEventListener("click", () => goToSlide(index));
+      carouselDots.append(dot);
+    });
+  };
+
+  const refreshCarousel = () => {
+    renderCarouselDots();
+    window.requestAnimationFrame(() => {
+      updateLoopMetrics();
+      goToSlide(viewIndices[getViewKey()], false);
+      startAutoScroll();
+    });
+  };
 
   const updateView = () => {
+    stopAutoScroll();
     projectsGrid.hidden = isContentView;
     contentGroups.hidden = !isContentView;
     toggle.setAttribute("aria-checked", String(isContentView));
@@ -152,11 +418,186 @@
         : "현재 프로젝트 정렬, 콘텐츠 정렬로 전환",
     );
     toggleLabel.textContent = isContentView ? "콘텐츠 정렬" : "프로젝트 정렬";
+    refreshCarousel();
   };
 
   toggle.addEventListener("click", () => {
     isContentView = !isContentView;
     updateView();
+  });
+
+  previousButton.addEventListener("click", () => {
+    const slides = getActiveSlides();
+
+    if (!slides.length) {
+      return;
+    }
+
+    goToSlide((viewIndices[getViewKey()] - 1 + slides.length) % slides.length);
+    startAutoScroll();
+  });
+
+  nextButton.addEventListener("click", () => {
+    const slides = getActiveSlides();
+
+    if (!slides.length) {
+      return;
+    }
+
+    goToSlide((viewIndices[getViewKey()] + 1) % slides.length);
+    startAutoScroll();
+  });
+
+  carousel.addEventListener("mouseenter", () => {
+    isCarouselHovered = true;
+    stopAutoScroll();
+  });
+
+  carousel.addEventListener("mouseleave", () => {
+    isCarouselHovered = false;
+    startAutoScroll();
+  });
+
+  carouselViewport.addEventListener("click", (event) => {
+    if (
+      !(event.target instanceof Element) ||
+      event.target.closest("a, button, input, select, textarea")
+    ) {
+      return;
+    }
+
+    centerSlideFromTarget(event.target);
+
+    if (document.activeElement instanceof HTMLElement && carousel.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  });
+
+  carousel.addEventListener("focusin", (event) => {
+    isCarouselFocused = true;
+    stopAutoScroll();
+    centerSlideFromTarget(event.target);
+  });
+
+  carousel.addEventListener("focusout", (event) => {
+    if (event.relatedTarget instanceof Node && carousel.contains(event.relatedTarget)) {
+      return;
+    }
+
+    isCarouselFocused = false;
+    startAutoScroll();
+  });
+
+  carouselViewport.addEventListener("pointerdown", stopAutoScroll);
+  carouselViewport.addEventListener("pointerup", startAutoScroll);
+  carouselViewport.addEventListener("pointercancel", startAutoScroll);
+
+  carouselViewport.addEventListener(
+    "wheel",
+    (event) => {
+      const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+
+      if (Math.abs(delta) < 4) {
+        return;
+      }
+
+      const direction = delta > 0 ? 1 : -1;
+      const slides = getActiveSlides();
+      const currentIndex = viewIndices[getViewKey()];
+      const nextIndex = currentIndex + direction;
+
+      if (nextIndex < 0 || nextIndex >= slides.length) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (wheelLocked) {
+        return;
+      }
+
+      wheelLocked = true;
+      goToSlide(nextIndex);
+      startAutoScroll();
+      window.setTimeout(() => {
+        wheelLocked = false;
+      }, 460);
+    },
+    { passive: false },
+  );
+
+  carouselViewport.addEventListener("keydown", (event) => {
+    const currentIndex = viewIndices[getViewKey()];
+
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      goToSlide(currentIndex - 1);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      goToSlide(currentIndex + 1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      goToSlide(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      goToSlide(getActiveSlides().length - 1);
+    }
+
+    startAutoScroll();
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      stopAutoScroll();
+    } else {
+      startAutoScroll();
+    }
+  });
+
+  prefersReducedMotion.addEventListener("change", startAutoScroll);
+
+  const carouselObserver = new IntersectionObserver(
+    ([entry]) => {
+      isCarouselVisible = entry.isIntersecting;
+
+      if (isCarouselVisible) {
+        startAutoScroll();
+      } else {
+        stopAutoScroll();
+      }
+    },
+    { threshold: 0.2 },
+  );
+
+  carouselObserver.observe(carousel);
+
+  carouselViewport.addEventListener("scroll", () => {
+    window.cancelAnimationFrame(scrollFrame);
+    scrollFrame = window.requestAnimationFrame(() => {
+      const slides = getActiveSlides();
+      const { loopDistance, slideDistance } = getActiveMetrics();
+      const normalizedPosition =
+        loopDistance > 0
+          ? ((carouselViewport.scrollLeft % loopDistance) + loopDistance) % loopDistance
+          : 0;
+      const closestIndex =
+        slides.length && slideDistance > 0
+          ? Math.round(normalizedPosition / slideDistance) % slides.length
+          : 0;
+
+      if (viewIndices[getViewKey()] !== closestIndex) {
+        viewIndices[getViewKey()] = closestIndex;
+        updateCarouselUi();
+      }
+    });
+  });
+
+  window.addEventListener("resize", () => {
+    window.cancelAnimationFrame(resizeFrame);
+    resizeFrame = window.requestAnimationFrame(() => {
+      updateLoopMetrics();
+      goToSlide(viewIndices[getViewKey()], false);
+    });
   });
 
   updateView();

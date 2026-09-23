@@ -215,7 +215,13 @@
         </button>
       </div>
 
-      <div class="projects-grid" id="projects-grid">
+      <div class="projects-carousel" aria-label="프로젝트 및 콘텐츠 슬라이드">
+        <button class="projects-carousel-control projects-carousel-prev" type="button" aria-label="이전 항목">
+          <span aria-hidden="true">‹</span>
+        </button>
+
+        <div class="projects-carousel-viewport" tabindex="0" aria-roledescription="carousel">
+          <div class="projects-grid" id="projects-grid">
 
         <article class="project-card">
           <header class="project-card-header">
@@ -481,13 +487,24 @@
         </article>
 
 
+          </div>
+          <div class="content-groups" id="content-groups" aria-label="콘텐츠별 구현 목록" hidden></div>
+        </div>
+
+        <button class="projects-carousel-control projects-carousel-next" type="button" aria-label="다음 항목">
+          <span aria-hidden="true">›</span>
+        </button>
+
+        <div class="projects-carousel-footer">
+          <div class="projects-carousel-dots" aria-label="슬라이드 선택"></div>
+          <p class="projects-carousel-status" aria-live="polite"></p>
+        </div>
       </div>
-      <div class="content-groups" id="content-groups" aria-label="콘텐츠별 구현 목록" hidden></div>
     </section>
 
   </main>
 
-  <footer class="footer">© 2026 Kim Minji. Game Client Programmer Portfolio.<br><strong>WE MAKE WONDERS!</strong></footer>
+  <footer class="footer">© 2026 Kim Minji. Game Client Programmer Portfolio.</footer>
   <script src="script.js"></script>
 </body>
 

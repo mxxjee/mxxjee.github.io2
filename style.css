@@ -673,10 +673,48 @@ a:focus-visible {
   transform: translateX(22px);
 }
 
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+.projects-carousel {
+  --carousel-gap: 26px;
+  --carousel-slide-width: min(88%, 980px);
+  --carousel-slide-width: min(88cqw, 980px);
+  position: relative;
+  container-type: inline-size;
+}
+
+.projects-carousel-viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: auto;
+  scroll-padding-inline: calc((100% - var(--carousel-slide-width)) / 2);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.projects-carousel.is-auto-scrolling .projects-carousel-viewport {
+  scroll-snap-type: none;
+}
+
+.projects-carousel-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.projects-carousel-viewport:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 5px;
+}
+
+.projects-grid,
+.content-groups {
+  display: flex;
+  gap: var(--carousel-gap);
+  padding: 14px calc((100% - var(--carousel-slide-width)) / 2) 26px;
+}
+
+.projects-grid::after,
+.content-groups::after {
+  content: "";
+  flex: 0 0 max(0px, calc((100cqw - var(--carousel-slide-width)) / 2));
 }
 
 .projects-grid[hidden],
@@ -684,10 +722,12 @@ a:focus-visible {
   display: none;
 }
 
-.content-groups {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
+.project-card,
+.content-group {
+  flex: 0 0 var(--carousel-slide-width);
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+  cursor: pointer;
 }
 
 .content-group {
@@ -698,6 +738,109 @@ a:focus-visible {
   border-top: 4px solid var(--color-primary);
   border-radius: 22px;
   box-shadow: 0 18px 42px var(--color-shadow);
+}
+
+.projects-carousel-control {
+  display: inline-flex;
+  position: absolute;
+  top: 46%;
+  z-index: 12;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  box-shadow: 0 10px 28px rgba(17, 17, 17, 0.14);
+  color: var(--color-dark);
+  cursor: pointer;
+  font-family: Arial, sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  transform: translateY(-50%);
+  transition: background-color var(--transition-fast), border-color var(--transition-fast),
+    color var(--transition-fast), opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.projects-carousel-prev {
+  left: 18px;
+}
+
+.projects-carousel-next {
+  right: 18px;
+}
+
+.projects-carousel-control:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: var(--color-on-dark);
+  transform: translateY(-50%) scale(1.06);
+}
+
+.projects-carousel-control:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.projects-carousel-control:disabled {
+  cursor: default;
+  opacity: 0.32;
+}
+
+.projects-carousel-footer {
+  display: flex;
+  min-height: 24px;
+  margin-top: 4px;
+  align-items: center;
+  justify-content: center;
+}
+
+.projects-carousel-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.projects-carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  background: #c9c1bd;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast),
+    width var(--transition-fast);
+}
+
+.projects-carousel-dot:hover {
+  background: var(--color-primary-dark);
+  transform: scale(1.16);
+}
+
+.projects-carousel-dot:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.projects-carousel-dot[aria-current="true"] {
+  width: 24px;
+  background: var(--color-primary);
+}
+
+.projects-carousel-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .content-group-header {
@@ -1171,12 +1314,6 @@ a:focus-visible {
   text-align: center;
 }
 
-.footer strong {
-  color: var(--color-primary);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-}
-
 @media (max-width: 820px) {
   .hero {
     min-height: auto;
@@ -1203,13 +1340,24 @@ a:focus-visible {
     padding-right: 20px;
   }
 
-  .projects-grid {
-    gap: 16px;
+  .projects-carousel {
+    --carousel-gap: 18px;
+    --carousel-slide-width: calc(100% - 56px);
+    --carousel-slide-width: calc(100cqw - 56px);
   }
 
-  .content-groups {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .projects-carousel-control {
+    width: 44px;
+    height: 44px;
+    font-size: 32px;
+  }
+
+  .projects-carousel-prev {
+    left: 6px;
+  }
+
+  .projects-carousel-next {
+    right: 6px;
   }
 
   .project-card {
@@ -1421,9 +1569,30 @@ a:focus-visible {
     font-size: 34px;
   }
 
-  .projects-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
+  .projects-carousel {
+    --carousel-gap: 12px;
+    --carousel-slide-width: calc(100% - 30px);
+    --carousel-slide-width: calc(100cqw - 30px);
+  }
+
+  .projects-grid,
+  .content-groups {
+    padding-top: 10px;
+    padding-bottom: 20px;
+  }
+
+  .projects-carousel-control {
+    width: 38px;
+    height: 38px;
+    font-size: 28px;
+  }
+
+  .projects-carousel-prev {
+    left: 2px;
+  }
+
+  .projects-carousel-next {
+    right: 2px;
   }
 
   .project-card {
@@ -1465,6 +1634,10 @@ a:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   html {
+    scroll-behavior: auto;
+  }
+
+  .projects-carousel-viewport {
     scroll-behavior: auto;
   }
 
