@@ -1,17 +1,21 @@
 :root {
-   --color-primary: #0AA0D2;       /* NEXON blue */
-  --color-primary-dark: #0A3255;  /* NEXON navy */
-  --color-primary-light: rgba(10, 160, 210, 0.14);
-  --color-secondary: #B4E114;     /* NEXON green */
-  --color-secondary-light: rgba(180, 225, 20, 0.16);
-  --color-bg: #ffffff;
-  --color-bg-soft: rgba(204, 204, 204, 0.18);
+  /* Smilegate-inspired palette: official orange, deep orange and neutral black. */
+  --color-primary: #ff5000;
+  --color-primary-dark: #d44300;
+  --color-primary-light: rgba(255, 80, 0, 0.11);
+  --color-primary-border: rgba(255, 80, 0, 0.36);
+  --color-secondary: #111111;
+  --color-secondary-light: rgba(17, 17, 17, 0.08);
+  --color-bg: #fffdfb;
+  --color-bg-soft: #fff4ee;
   --color-surface: #ffffff;
-  --color-text: #000000;
-  --color-text-sub: #6e6e6e;
-  --color-text-muted: #6e6e6e;
-  --color-line: #cccccc;
-  --color-dark: #000000;
+  --color-text: #111111;
+  --color-text-sub: #55504d;
+  --color-text-muted: #77706c;
+  --color-line: #e7d9d2;
+  --color-dark: #111111;
+  --color-on-dark: #ffffff;
+  --color-shadow: rgba(117, 37, 0, 0.1);
   --content-width: 1160px;
   --header-height: 72px;
   --radius-card: 20px;
@@ -45,7 +49,7 @@ section[id] {
 }
 
 ::selection {
-  background: var(--color-primary-light);
+  background: rgba(255, 80, 0, 0.24);
   color: var(--color-text);
 }
 
@@ -59,8 +63,10 @@ a:focus-visible {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(255, 253, 251, 0.94);
   border-bottom: 1px solid var(--color-line);
+  box-shadow: 0 8px 30px rgba(117, 37, 0, 0.035);
+  backdrop-filter: blur(14px);
 }
 
 .nav {
@@ -74,10 +80,22 @@ a:focus-visible {
 }
 
 .logo {
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.08em;
+}
+
+.logo::before {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  background: var(--color-primary);
+  content: "";
+  transform: rotate(45deg);
 }
 
 .nav-links {
@@ -122,12 +140,30 @@ a:focus-visible {
 /* Hero */
 .hero {
   display: flex;
+  position: relative;
   min-height: calc(100svh - var(--header-height));
   align-items: center;
-  background: var(--color-bg);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 84% 38%, rgba(255, 80, 0, 0.15), transparent 28%),
+    linear-gradient(135deg, #fffdfb 0%, #fff9f5 58%, #fff1e9 100%);
+}
+
+.hero::after {
+  position: absolute;
+  top: 14%;
+  right: -12vw;
+  width: min(46vw, 620px);
+  aspect-ratio: 1;
+  border: clamp(38px, 5vw, 70px) solid rgba(255, 80, 0, 0.055);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
 }
 
 .hero-inner {
+  position: relative;
+  z-index: 1;
   width: min(100% - 48px, var(--content-width));
   margin: 0 auto;
   padding: clamp(72px, 9vh, 112px) 0;
@@ -146,7 +182,11 @@ a:focus-visible {
 }
 
 .hero-title-accent {
-  color: var(--color-primary);
+  background: linear-gradient(110deg, var(--color-primary), var(--color-primary-dark));
+  background-clip: text;
+  color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero-intro {
@@ -187,7 +227,7 @@ a:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 28px;
-  border-bottom: 1px solid var(--color-text);
+  border-bottom: 2px solid var(--color-primary);
   font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -196,15 +236,18 @@ a:focus-visible {
 
 .hero-link:hover {
   color: var(--color-primary-dark);
-  border-color: var(--color-primary);
+  border-color: var(--color-primary-dark);
 }
 
 /* About */
 .about-section {
   padding: clamp(88px, 12vw, 150px) 0;
-  background: var(--color-bg-soft);
-  border-top: 1px solid var(--color-line);
-  border-bottom: 1px solid var(--color-line);
+  background:
+    radial-gradient(circle at 92% 10%, rgba(255, 80, 0, 0.18), transparent 24%),
+    var(--color-dark);
+  border-top: 4px solid var(--color-primary);
+  border-bottom: 0;
+  color: var(--color-on-dark);
 }
 
 .about-inner {
@@ -244,11 +287,11 @@ a:focus-visible {
   min-height: 78px;
   padding: 16px 0;
   align-items: center;
-  border-top: 1px solid var(--color-line);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .about-row:last-child {
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .about-row dt,
@@ -257,7 +300,7 @@ a:focus-visible {
 }
 
 .about-row dt {
-  color: var(--color-text-muted);
+  color: #aaa19d;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -278,9 +321,9 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   background: var(--color-primary-light);
-  border: 1px solid rgba(10, 160, 210, 0.42);
+  border: 1px solid rgba(255, 80, 0, 0.62);
   border-radius: 50%;
-  color: var(--color-primary-dark);
+  color: #ff7840;
   font-family: Arial, sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -296,12 +339,12 @@ a:focus-visible {
   display: block;
   width: 18px;
   height: 18px;
-  filter: brightness(0);
+  filter: brightness(0) invert(1);
   object-fit: contain;
 }
 
 .about-placeholder {
-  color: var(--color-text-muted);
+  color: #aaa19d;
   font-weight: 500;
 }
 
@@ -310,11 +353,11 @@ a:focus-visible {
 }
 
 .about-link:hover {
-  color: var(--color-primary-dark);
+  color: var(--color-primary);
 }
 
 .about-link.is-pending {
-  color: var(--color-text-sub);
+  color: #aaa19d;
 }
 
 /* Existing sections: content and current card structure are preserved. */
@@ -325,7 +368,7 @@ a:focus-visible {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 18px 45px var(--color-shadow);
 }
 
 #skills {
@@ -382,7 +425,7 @@ a:focus-visible {
 
 .skills-panel {
   padding: 8px 30px;
-  background: var(--color-bg-soft);
+  background: linear-gradient(135deg, #fff8f4, var(--color-bg-soft));
   border: 1px solid var(--color-line);
   border-radius: 18px;
 }
@@ -419,7 +462,7 @@ a:focus-visible {
   align-items: center;
   justify-content: center;
   background: var(--color-primary-light);
-  border: 1px solid rgba(10, 160, 210, 0.42);
+  border: 1px solid var(--color-primary-border);
   border-radius: 10px;
   color: var(--color-primary-dark);
   font-size: 11px;
@@ -577,14 +620,14 @@ a:focus-visible {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: 22px;
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.07);
+  box-shadow: 0 18px 42px var(--color-shadow);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
     transform var(--transition-fast);
 }
 
 .project-card:hover {
   border-color: var(--color-primary);
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 22px 50px rgba(212, 67, 0, 0.16);
   transform: translateY(-3px);
 }
 
@@ -603,9 +646,9 @@ a:focus-visible {
 .project-label {
   display: inline-flex;
   padding: 6px 10px;
-  background: var(--color-secondary);
+  background: var(--color-primary-dark);
   border-radius: 8px;
-  color: var(--color-primary-dark);
+  color: var(--color-on-dark);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
@@ -704,7 +747,7 @@ a:focus-visible {
   z-index: 2;
   width: 54px;
   height: 38px;
-  background: var(--color-secondary);
+  background: var(--color-primary);
   border-radius: 11px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   transform: translate(-50%, -50%);
@@ -717,7 +760,7 @@ a:focus-visible {
   left: 52%;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-left: 13px solid var(--color-dark);
+  border-left: 13px solid var(--color-on-dark);
   content: "";
   transform: translate(-50%, -50%);
 }
@@ -741,7 +784,7 @@ a:focus-visible {
 }
 
 .project-video:hover .project-play {
-  background: var(--color-primary);
+  background: var(--color-primary-dark);
   transform: translate(-50%, -50%) scale(1.06);
 }
 
@@ -917,9 +960,18 @@ a:focus-visible {
 }
 
 .footer {
-  padding: 30px 20px 60px;
-  color: var(--color-text-sub);
+  margin-top: clamp(72px, 10vw, 112px);
+  padding: 34px 20px 54px;
+  background: var(--color-dark);
+  border-top: 4px solid var(--color-primary);
+  color: #aaa19d;
   text-align: center;
+}
+
+.footer strong {
+  color: var(--color-primary);
+  font-size: 12px;
+  letter-spacing: 0.14em;
 }
 
 @media (max-width: 820px) {
