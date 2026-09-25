@@ -309,10 +309,14 @@
     updateCarouselUi();
   };
 
-  const stopAutoScroll = () => {
+  const pauseAutoScroll = () => {
     window.cancelAnimationFrame(autoScrollFrame);
     autoScrollFrame = 0;
     lastAutoScrollTime = 0;
+  };
+
+  const stopAutoScroll = () => {
+    pauseAutoScroll();
     carousel.classList.remove("is-auto-scrolling");
   };
 
@@ -450,7 +454,7 @@
 
   carousel.addEventListener("mouseenter", () => {
     isCarouselHovered = true;
-    stopAutoScroll();
+    pauseAutoScroll();
   });
 
   carousel.addEventListener("mouseleave", () => {
