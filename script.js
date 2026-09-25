@@ -59,132 +59,160 @@
   const categoryMeta = [
     {
       key: "gameplay",
+      tag: "GAMEPLAY",
       title: "게임플레이 · 인터랙션",
       description: "플레이어 행동, 미니게임, 대화와 퀘스트처럼 직접 체감되는 플레이 경험입니다.",
     },
     {
-      key: "tools-ui",
-      title: "UI · 제작 도구",
-      description: "콘텐츠 제작 효율과 사용자 경험을 높이기 위해 구현한 도구와 UI 시스템입니다.",
+      key: "UI",
+      tag: "UI",
+      title: "UI",
+      description: "게임플레이와 상호작용하는 UI와 그 기반 시스템을 구현했습니다.",
     },
     {
-      key: "architecture",
+      key: "TOOLS",
+      tag: "TOOLS",
+      title: "제작 도구",
+      description: "게임 제작 효율을 높이기 위해 구현한 도구입니다.",
+    },
+    {
+      key: "SYSTEM",
+      tag: "SYSTEM",
       title: "아키텍처 · 프레임워크",
-      description: "확장성과 유지보수를 고려해 설계한 이벤트, 생명주기와 실행 구조입니다.",
-    },
-    {
-      key: "data",
-      title: "데이터 · 진행 시스템",
-      description: "콘텐츠 해금, 스테이지 진행과 저장처럼 게임의 흐름을 유지하는 시스템입니다.",
-    },
-    {
-      key: "multiplayer",
-      title: "멀티플레이 · 동기화",
-      description: "서버와 클라이언트 사이의 게임 진입, 상태 처리와 동기화 구조입니다.",
-    },
-    {
-      key: "client-quality",
-      title: "클라이언트 기술 · 품질",
-      description: "렌더링 구현부터 AI 기반 구조 개선과 수치 검증까지 클라이언트 품질을 다룬 경험입니다.",
-    },
+      description: "게임플레이와 엔진을 구현하기 위해 설계한 아키텍처와 프레임워크입니다.",
+    }
   ];
 
-  const groupedItems = new Map(categoryMeta.map((category) => [category.key, []]));
+  const contentItems = [];
 
   projectsGrid.querySelectorAll(".project-card").forEach((card) => {
-    const projectLabel = card.querySelector(".project-label")?.textContent.trim() ?? "PROJECT";
     const projectTitle = card.querySelector(".project-title-block h3")?.textContent.trim() ?? "프로젝트";
     const projectLinks = Array.from(card.querySelectorAll(".project-links a"));
+    const projectImage = card.querySelector(".project-video img");
+
+    if (projectTitle === "AI 활용 Interaction Manager 리팩토링") {
+      return;
+    }
+
     const detailLink =
       projectLinks.find((link) => link.textContent.includes("Notion")) ??
       projectLinks[0] ??
       card.querySelector(".project-video");
 
     card.querySelectorAll("[data-content-category]").forEach((item) => {
-      const category = item.dataset.contentCategory;
+      const categoryKeys = (item.dataset.contentCategory ?? "")
+        .split(",")
+        .map((category) => category.trim())
+        .filter(Boolean);
+      const categoryInfos = categoryKeys
+        .map((category) => categoryMeta.find((entry) => entry.key === category))
+        .filter(Boolean);
 
-      if (!category || !groupedItems.has(category)) {
+      if (!categoryInfos.length) {
         return;
       }
 
-      groupedItems.get(category).push({
-        projectLabel,
+      const primaryCategory = categoryInfos[0];
+
+      const contentImage = item.dataset.contentImage?.trim();
+      const referencedImage = contentImage?.startsWith("#")
+        ? document.querySelector(contentImage)
+        : null;
+      const customImageSrc =
+        contentImage && contentImage !== "project"
+          ? referencedImage?.src ?? contentImage
+          : projectImage?.src ?? "";
+      contentItems.push({
+        category: primaryCategory,
+        tags: [...new Set(categoryInfos.map((category) => category.tag))],
         projectTitle,
         title: item.textContent.trim(),
-        href: detailLink?.href ?? "#projects",
+        description:
+          item.dataset.contentDescription?.trim() ||
+          `${projectTitle}에서 구현한 기술입니다. ${primaryCategory.description}`,
+        href: item.dataset.contentLink?.trim() || detailLink?.href || "#projects",
+        imageSrc: customImageSrc,
+        imageAlt:
+          item.dataset.contentImageAlt?.trim() ||
+          referencedImage?.alt ||
+          projectImage?.alt ||
+          `${projectTitle} 대표 이미지`,
       });
     });
   });
 
-  categoryMeta.forEach((category, index) => {
-    const items = groupedItems.get(category.key);
+  contentItems.sort((firstItem, secondItem) => {
+    const firstCategoryIndex = categoryMeta.indexOf(firstItem.category);
+    const secondCategoryIndex = categoryMeta.indexOf(secondItem.category);
+    return firstCategoryIndex - secondCategoryIndex;
+  });
 
-    if (!items?.length) {
-      return;
-    }
+  contentItems.forEach((item) => {
+    const card = document.createElement("article");
+    card.className = "content-card";
 
-    const group = document.createElement("article");
-    group.className = "content-group";
+    const tags = document.createElement("div");
+    tags.className = "content-card-tags";
 
-    const header = document.createElement("header");
-    header.className = "content-group-header";
-
-    const meta = document.createElement("div");
-    meta.className = "content-group-meta";
-
-    const groupIndex = document.createElement("span");
-    groupIndex.className = "content-group-index";
-    groupIndex.textContent = `CONTENT ${String(index + 1).padStart(2, "0")}`;
-
-    const count = document.createElement("span");
-    count.className = "content-group-count";
-    count.textContent = String(items.length);
-    count.setAttribute("aria-label", `${items.length}개 구현 항목`);
-
-    const title = document.createElement("h3");
-    title.textContent = category.title;
-
-    const description = document.createElement("p");
-    description.className = "content-group-description";
-    description.textContent = category.description;
-
-    meta.append(groupIndex, count);
-    header.append(meta, title, description);
-
-    const list = document.createElement("ul");
-    list.className = "content-items";
-
-    items.forEach((item) => {
-      const listItem = document.createElement("li");
-      const link = document.createElement("a");
-      link.className = "content-item-link";
-      link.href = item.href;
-
-      if (item.href.startsWith("http")) {
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-      }
-
-      const project = document.createElement("span");
-      project.className = "content-item-project";
-      project.textContent = `${item.projectLabel} · ${item.projectTitle}`;
-
-      const itemTitle = document.createElement("strong");
-      itemTitle.className = "content-item-title";
-      itemTitle.textContent = item.title;
-
-      const arrow = document.createElement("span");
-      arrow.className = "content-item-arrow";
-      arrow.setAttribute("aria-hidden", "true");
-      arrow.textContent = "↗";
-
-      link.append(project, itemTitle, arrow);
-      listItem.append(link);
-      list.append(listItem);
+    item.tags.forEach((tagText) => {
+      const tag = document.createElement("span");
+      tag.className = "content-card-tag";
+      tag.textContent = tagText;
+      tags.append(tag);
     });
 
-    group.append(header, list);
-    contentGroups.append(group);
+    const media = document.createElement("div");
+    media.className = "content-card-media";
+
+    if (item.imageSrc) {
+      const image = document.createElement("img");
+      image.src = item.imageSrc;
+      image.alt = item.imageAlt;
+      image.loading = "lazy";
+      image.decoding = "async";
+      media.append(image);
+    }
+
+    const body = document.createElement("div");
+    body.className = "content-card-body";
+
+    const title = document.createElement("h3");
+    title.textContent = item.title;
+
+    const description = document.createElement("p");
+    description.textContent = item.description;
+
+    const link = document.createElement("a");
+    link.className = "content-card-link";
+    link.href = item.href;
+    link.setAttribute("aria-label", `${item.title} Notion에서 보기`);
+
+    if (item.href.startsWith("http")) {
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+
+    const notionMark = document.createElement("span");
+    notionMark.className = "content-card-notion";
+    notionMark.setAttribute("aria-hidden", "true");
+
+    const notionIcon = document.createElement("img");
+    notionIcon.src = "https://cdn.simpleicons.org/notion/1F1F1F";
+    notionIcon.alt = "";
+    notionMark.append(notionIcon);
+
+    const linkText = document.createElement("span");
+    linkText.textContent = "Notion에서 보기";
+
+    const arrow = document.createElement("span");
+    arrow.className = "content-card-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "↗";
+
+    link.append(notionMark, linkText, arrow);
+    body.append(title, description);
+    card.append(tags, media, body, link);
+    contentGroups.append(card);
   });
 
   const appendLoopClones = (track) => {
@@ -295,7 +323,7 @@
       .reduce(
         (closest, candidate) =>
           Math.abs(candidate - carouselViewport.scrollLeft) <
-          Math.abs(closest - carouselViewport.scrollLeft)
+            Math.abs(closest - carouselViewport.scrollLeft)
             ? candidate
             : closest,
         Math.max(0, Math.min(baseTargetLeft, maxScroll)),
@@ -366,7 +394,7 @@
       return;
     }
 
-    const slide = target.closest(".project-card, .content-group");
+    const slide = target.closest(".project-card, .content-card");
 
     if (!slide || !getActiveTrack().contains(slide)) {
       return;
@@ -414,6 +442,7 @@
     stopAutoScroll();
     projectsGrid.hidden = isContentView;
     contentGroups.hidden = !isContentView;
+    carousel.classList.toggle("is-content-view", isContentView);
     toggle.setAttribute("aria-checked", String(isContentView));
     toggle.setAttribute(
       "aria-label",
