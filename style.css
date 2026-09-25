@@ -2,7 +2,7 @@
   /* Smilegate-inspired palette: official orange, deep orange and neutral black. */
   --color-primary: #ff5000;
   --color-primary-dark: #d44300;
-  --color-primary-light: rgba(255, 80, 0, 0.11);
+  --color-primary-light: rgba(255, 80, 0, 0.12);
   --color-primary-border: rgba(255, 80, 0, 0.36);
   --color-secondary: #111111;
   --color-secondary-light: rgba(17, 17, 17, 0.08);
